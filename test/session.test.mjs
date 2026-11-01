@@ -27,7 +27,7 @@ test("login, cookie rotation, origin isolation and logout through real CLI proce
     expectedOrigin = f.origin;
     const login = await f.cli(["auth", "login", "--account", "13800138000", "--password-stdin"], "secret\n");
     assert.equal(login.code, 0, login.stderr);
-    assert.deepEqual(JSON.parse(loginBody), { email: "13800138000@phone.sanlinlaojie.local", password: "secret" });
+    assert.deepEqual(JSON.parse(loginBody), { email: "13800138000@phone.spatialmemory.local", password: "secret" });
     assert.doesNotMatch(login.stdout + login.stderr, /must-not-print|secret|session_token/);
     assert.equal((await stat(f.config)).mode & 0o777, 0o600);
     assert.doesNotMatch(await readFile(f.config, "utf8"), /secret/);

@@ -5,6 +5,7 @@
 - 品牌改为 Spatial Memory，独立安装包为 `spatial-memory-web-cli`，命令为 `spatial-memory`。
 - 环境变量统一使用 `SPATIAL_MEMORY_*`，默认会话目录改为 `~/.config/spatial-memory`。
 - 更新帮助、使用说明、安装验证和离线 HTTP 测试，按新名称生成安装包。
+- 手机号虚拟邮箱统一为 `phone.spatialmemory.local`，与服务端账号迁移同步发布。
 - 保留既有 HTTP 和场景协议；本次不升级场景编排能力。
 
 ## 0.1.0 — 2026-10-14

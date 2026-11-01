@@ -2,7 +2,7 @@
 
 此工具只通过公开的 HTTP API 与服务端通信。编译、运行、安装和测试均不依赖 Web 仓库。
 
-- 会话：Better Auth Cookie，邮箱/密码登录，手机号映射为 `@phone.sanlinlaojie.local`。该域名是已持久化的账号标识，品牌改名不改变既有登录账号。
+- 会话：Better Auth Cookie，邮箱/密码登录，手机号映射为 `@phone.spatialmemory.local`。部署时直接迁移既有手机号账号的虚拟邮箱，账号 ID、密码和关联数据不变；CLI 与 Web 使用同一域名，不回退到旧域名。
 - 素材类型：`src/contract.ts` 是 HTTP 字段枚举，包含场景等 10 种类型。
 - 场景：`src/scene/` 内置纯 TypeScript 的 schemaVersion 1/2 校验快照，支持本地 `init` 和 `validate`。
 - 场景资产的模型引用、工作区权限、当前版本冲突仍由服务端最终校验。CLI 不复制数据库或服务端授权逻辑。
