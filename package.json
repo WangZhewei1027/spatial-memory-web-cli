@@ -28,8 +28,8 @@
     "typescript": "5.9.3"
   },
   "dependencies": {
-    "@spatial-memory/scene-authoring": "file:vendor/spatial-memory-scene-authoring-0.2.0.tgz",
-    "@spatial-memory/scene-renderer": "file:vendor/spatial-memory-scene-renderer-0.1.1.tgz"
+    "@spatial-memory/scene-authoring": "file:vendor/spatial-memory-scene-authoring-0.3.0.tgz",
+    "@spatial-memory/scene-renderer": "file:vendor/spatial-memory-scene-renderer-0.2.0.tgz"
   },
   "bundleDependencies": [
     "@spatial-memory/scene-authoring",
