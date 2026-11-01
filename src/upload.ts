@@ -13,7 +13,7 @@ const mimeTypes: Record<string, string> = {
   ".pdf": "application/pdf", ".glb": "model/gltf-binary", ".gltf": "model/gltf+json",
 };
 
-export async function uploadCommand(args: Args, client: Client) {
+export async function uploadCommand(args: Args, client: Client, onUploaded?: (state: { upload: Record<string, unknown>; createRequest: { path: string; body: Record<string, unknown> } }) => Promise<void>) {
   check(args, 3, ["org", "type", "name", "mime", "data", "idempotency-key"]);
   const org = id(str(args.options, "org", true)!).toLowerCase();
   const file = args.words[2];
@@ -40,6 +40,8 @@ export async function uploadCommand(args: Args, client: Client) {
   const receipt = object(upload.data);
   if (typeof receipt.id !== "string" || receipt.organization_id !== org || typeof receipt.url !== "string") throw new CliError("上传回执格式或团队归属不正确", 1);
   const createBody = { ...body, resources: [{ role, receiptId: receipt.id }] };
+  const createRequest = { path: `/api/organizations/${org}/assets`, body: createBody };
+  await onUploaded?.({ upload, createRequest });
   try {
     return await client.request({ method: "POST", path: `/api/organizations/${org}/assets`, body: createBody });
   } catch (error) {

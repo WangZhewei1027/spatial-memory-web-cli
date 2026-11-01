@@ -48,7 +48,7 @@ spatial-memory assets upload ./model.glb --org TEAM_ID --type model --name "建�
 spatial-memory assets upload ./photo.jpg --org TEAM_ID --type image --data @attributes.json --timeout 120000
 ```
 
-上传先 `POST /api/upload`（`organization_id`、`purpose=asset`），再向团队创建素材，`resources` 引用返回的 `data.id` 回执。识别图（anchor）使用 `reference` 角色，其他文件使用 `primary`。不能用客户端提供的 `file_url` 代替回执。原文件限制与服务端一致：模型 3 MiB、文档 5 MiB、图片/音频/识别图 32 MiB、视频 512 MiB。视频还有服务端时长限制。服务端处理图片、音视频，返回的是处理后对象的 URL/hash；CLI 不做 EXIF 或浏览器处理。
+上传先 `POST /api/upload`（`organization_id`、`purpose=asset`），再向团队创建素材，`resources` 引用返回的 `data.id` 回执。识别图（anchor）使用 `reference` 角色，其他文件使用 `primary`。不能用客户端提供的 `file_url` 代替回执。原文件限制与服务端一致：模型 5 MiB、文档 5 MiB、图片/音频/识别图 32 MiB、视频 512 MiB。视频还有服务端时长限制。服务端处理图片、音视频，返回的是处理后对象的 URL/hash；CLI 上传原文件，独立探测不会改写源文件。
 
 明确创建拒绝（4xx，408 除外）时，仅对新上传文件调用安全清理；去重文件不清理。超时/5xx 可能已提交，不自动重试或删除。错误的 `details.createRequest` 保存原幂等键与回执，可查询后重试该精确请求。`details.upload` 包含对象路径供人工排查。
 

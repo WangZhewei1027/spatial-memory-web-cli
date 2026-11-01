@@ -15,15 +15,17 @@ const exec = (command, args, cwd = temp, env = process.env) => execFileSync(comm
 try {
   const [packed] = JSON.parse(exec(npm, ["pack", "--ignore-scripts", "--json", "--pack-destination", temp], root));
   for (const entry of packed.files) {
-    assert.ok(/^(dist\/|docs\/|package\.json$|README\.md$|CHANGELOG\.md$)/.test(entry.path), `Unexpected package file: ${entry.path}`);
-    assert.doesNotMatch(entry.path, /(^|\/)(node_modules|\.env[^/]*|sessions\.json)(\/|$)/);
+    assert.ok(/^(dist\/|docs\/|node_modules\/(?:@spatial-memory\/scene-(?:authoring|renderer)|playwright(?:-core)?|fsevents)\/|package\.json$|README\.md$|CHANGELOG\.md$)/.test(entry.path), `Unexpected package file: ${entry.path}`);
+    assert.doesNotMatch(entry.path, /(^|\/)(\.env[^/]*|sessions\.json)(\/|$)/);
+    assert.doesNotMatch(entry.path, /^dist\/scene\//, "legacy validator snapshot must not ship");
   }
   const install = join(temp, "install");
   await mkdir(install);
   exec(npm, ["install", "--prefix", install, "--offline", "--ignore-scripts", "--omit=dev", "--no-audit", "--no-fund", join(temp, packed.filename)]);
   const installed = join(install, "node_modules", "spatial-memory-web-cli");
   const pkg = JSON.parse(await readFile(join(installed, "package.json"), "utf8"));
-  assert.equal(Object.keys(pkg.dependencies ?? {}).length, 0);
+  assert.deepEqual(Object.keys(pkg.dependencies ?? {}).sort(), ["@spatial-memory/scene-authoring", "@spatial-memory/scene-renderer"]);
+  assert.deepEqual([...pkg.bundleDependencies].sort(), Object.keys(pkg.dependencies).sort());
   assert.deepEqual((await readdir(join(install, "node_modules"))).filter((name) => !name.startsWith(".")), ["spatial-memory-web-cli"]);
   const userDir = join(temp, "user");
   await mkdir(userDir);
@@ -37,7 +39,7 @@ try {
     ...process.env, SPATIAL_MEMORY_TEST_CLI: join(installed, pkg.bin["spatial-memory"]), SPATIAL_MEMORY_TEST_CWD: userDir,
   });
   process.stdout.write(output);
-  console.log(`PASS offline package install, spatial-memory executable and HTTP workflows (${packed.size} bytes; zero runtime dependencies)`);
+  console.log(`PASS offline package install, spatial-memory executable and HTTP workflows (${packed.size} bytes; bundled scene runtimes)`);
 } catch (error) {
   if (error.stdout) process.stderr.write(error.stdout);
   if (error.stderr) process.stderr.write(error.stderr);

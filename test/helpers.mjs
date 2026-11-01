@@ -2,10 +2,11 @@ import { spawn } from "node:child_process";
 import { createServer } from "node:http";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const cliPath = process.env.SPATIAL_MEMORY_TEST_CLI ?? fileURLToPath(new URL("../dist/cli.js", import.meta.url));
+export async function cliModule(name) { return import(pathToFileURL(join(dirname(cliPath), name)).href); }
 export async function fixture(t, handler) {
     const dir = await mkdtemp(join(tmpdir(), "spatial-memory-cli-test-"));
     const server = createServer(handler);

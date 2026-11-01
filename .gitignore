@@ -2,8 +2,10 @@ node_modules/
 dist/
 artifacts/
 *.tgz
+!vendor/*.tgz
 .env
 .env.*
 *.tsbuildinfo
 .DS_Store
 sessions.json
+.spatial-memory/

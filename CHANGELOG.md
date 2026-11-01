@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0
+
+- 移除媒体倍速功能，音视频固定原速播放；时间拉伸只调整编排时间和关键帧。
+- 接入共享 scene-authoring 与 scene-renderer 包，移除独立 schema 6 校验副本，支持完整空间与时间参数编排。
+- 新增素材分页搜索、文件/URL 导入、元信息与预览检查；导入记录回执、幂等请求与来源缓存。模型原文件上限调整为 5 MiB。
+- 新增本地 run 草稿、原子 revision、历史恢复、编排/检查/采样/diff、服务端只读预检与版本锁保存。
+- 渲染支持多时刻、多镜头、自定义相机和自动边界/中点取样；图片与 manifest 记录到 run 历史。
+- 安装包包含共享运行依赖，图片渲染需要本机 Chrome 或 Playwright Chromium。
+
 ## 0.2.1 — 2026-11-01
 
 - 对齐当前团队内容 API：Scene 独立读写 schema 6 document，以 expectedLockVersion 防止覆盖冲突；支持分组、媒体、空间文字、参数动画和空间音频。

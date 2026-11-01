@@ -1,13 +1,13 @@
 # Spatial Memory Web CLI
 
-独立操作 Spatial Memory Web 服务的命令行工具。对应 Web 仓库为 `spatial-memory`，本 CLI 的独立包名为 `spatial-memory-web-cli`。只需 **Node.js 22+** 和一个可访问的 Web 服务地址，无需下载 Web 项目、运行本地服务器或配置数据库。安装包没有运行时依赖。
+独立操作 Spatial Memory Web 服务的命令行工具。对应 Web 仓库为 `spatial-memory`，本 CLI 的独立包名为 `spatial-memory-web-cli`。需要 **Node.js 22+** 和一个可访问的 Web 服务地址，无需下载 Web 项目、运行本地服务器或配置数据库。共享场景编排和渲染模块随安装包交付；图片预览使用本机 Chrome 或 Playwright Chromium，可用 `SPATIAL_MEMORY_CHROMIUM_PATH` 指定浏览器路径。
 
 ## 安装和连接线上服务
 
-收到 `spatial-memory-web-cli-0.2.1.tgz` 后，在任意目录安装：
+收到 `spatial-memory-web-cli-0.3.0.tgz` 后，在任意目录安装：
 
 ```bash
-npm install --global ./spatial-memory-web-cli-0.2.1.tgz
+npm install --global ./spatial-memory-web-cli-0.3.0.tgz
 spatial-memory --version
 spatial-memory --help
 
@@ -37,6 +37,8 @@ spatial-memory auth logout
 ```
 
 覆盖团队、地图合集、素材、放置点、文件上传、场景、用户、标签、匹配特征和日志。通用 `api` 命令调用其余 JSON API。成功输出为 JSON，可直接重定向或管道传给 jq；错误及 `--verbose` 诊断写入 stderr。
+
+本地 agent 可搜索素材库、导入网络或本地文件、操作带 revision 的草稿、采样和渲染多视角图片，再保存远端场景。执行素材搜集、编排、视觉反馈或失败恢复任务时，阅读 [agent 工作流程](docs/agent.md)。
 
 `--dry-run` 仅预览请求。上传将原文件交给服务端处理，素材通过上传回执引用文件；场景使用独立 schema 6 文档和数字版本锁。完整参数、场景编辑、脚本使用和退出码见 [使用文档](docs/usage.md)。
 

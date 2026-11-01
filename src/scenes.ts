@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { check, id, lockVersion, str, type Args } from "./args.js";
-import { parseSceneText } from "./scene/validate.js";
+import { parseSceneText } from "./authoring.js";
 import type { RequestPlan } from "./client.js";
 
 export async function sceneWritePlan(args: Args): Promise<RequestPlan> {

@@ -1,6 +1,6 @@
 {
   "name": "spatial-memory-web-cli",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Standalone CLI for Spatial Memory Web teams, collections, assets, placements and scenes",
   "type": "module",
   "license": "UNLICENSED",
@@ -17,7 +17,7 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "node scripts/build.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build && node --test test/*.test.mjs",
     "test:package": "npm run build && node scripts/test-package.mjs",
@@ -26,5 +26,13 @@
   "devDependencies": {
     "@types/node": "22.19.0",
     "typescript": "5.9.3"
-  }
+  },
+  "dependencies": {
+    "@spatial-memory/scene-authoring": "file:vendor/spatial-memory-scene-authoring-0.2.0.tgz",
+    "@spatial-memory/scene-renderer": "file:vendor/spatial-memory-scene-renderer-0.1.1.tgz"
+  },
+  "bundleDependencies": [
+    "@spatial-memory/scene-authoring",
+    "@spatial-memory/scene-renderer"
+  ]
 }
