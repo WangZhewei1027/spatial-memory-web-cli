@@ -33,7 +33,7 @@ spatial-memory assets get ASSET_ID
 spatial-memory assets create --org TEAM_ID --type text --name "文字" --text "你好" --idempotency-key my-text-1
 spatial-memory assets update ASSET_ID --data '{"name":"新名称","expectedLockVersion":0}'
 spatial-memory assets usage ASSET_ID
-spatial-memory assets duplicate ASSET_ID --data '{"name":"副本","idempotencyKey":"copy-1"}'
+spatial-memory assets duplicate ASSET_ID --data '{"name":"副本","idempotencyKey":"copy-0001"}'
 spatial-memory assets delete ASSET_ID --lock-version 1
 ```
 

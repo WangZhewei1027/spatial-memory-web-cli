@@ -15,7 +15,7 @@ const mimeTypes: Record<string, string> = {
 
 export async function uploadCommand(args: Args, client: Client) {
   check(args, 3, ["org", "type", "name", "mime", "data", "idempotency-key"]);
-  const org = id(str(args.options, "org", true)!);
+  const org = id(str(args.options, "org", true)!).toLowerCase();
   const file = args.words[2];
   const info = await stat(file);
   const body = await assetBody(args);

@@ -53,6 +53,32 @@ test("multipart upload creates asset; rejects clean up only new, unambiguously f
     assert.match(ambiguous.stderr, /storagePath/);
 });
 
+test("upload normalizes uppercase team UUIDs while still rejecting another team's receipt", async t => {
+    const org = "ABCDEFAB-1234-4567-89AB-ABCDEFABCDEF";
+    let foreignReceipt = false, created = 0;
+    const f = await fixture(t, async (req, res) => {
+        let raw = ""; for await (const chunk of req) raw += chunk;
+        if (req.url === "/api/upload") {
+            assert.ok(raw.includes(`name="organization_id"\r\n\r\n${org.toLowerCase()}`));
+            res.end(JSON.stringify({ data: { id: "receipt", organization_id: foreignReceipt ? "11111111-1234-4567-89ab-abcdefabcdef" : org.toLowerCase(), url: "https://media.test/image.jpg" } }));
+            return;
+        }
+        assert.equal(req.url, `/api/organizations/${org.toLowerCase()}/assets`);
+        assert.deepEqual(JSON.parse(raw).resources, [{ role: "primary", receiptId: "receipt" }]);
+        created++;
+        res.statusCode = 201; res.end('{"data":{"asset":{"id":"image"}}}');
+    });
+    const file = join(f.dir, "image.jpg"); await writeFile(file, "image fixture");
+    const args = ["assets", "upload", file, "--org", org, "--type", "image"];
+    const accepted = await f.cli(args);
+    assert.equal(accepted.code, 0, accepted.stderr);
+    assert.equal(created, 1);
+    foreignReceipt = true;
+    const rejected = await f.cli(args);
+    assert.equal(rejected.code, 1); assert.match(rejected.stderr, /团队归属/);
+    assert.equal(created, 1, "a receipt for a different team must not create an asset");
+});
+
 test("anchor upload supplies a reference receipt in both preview and actual creation", async t => {
     let uploads = 0, created = 0, deletes = 0;
     const f = await fixture(t, async (req, res) => {
