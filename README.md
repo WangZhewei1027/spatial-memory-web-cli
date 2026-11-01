@@ -12,6 +12,8 @@ spatial-memory --version
 spatial-memory --help
 
 export SPATIAL_MEMORY_BASE_URL=https://your-web.example
+spatial-memory auth login --provider google
+# 或使用邮箱/手机号和密码
 spatial-memory auth login --account you@example.com
 spatial-memory auth status
 spatial-memory orgs list
@@ -43,6 +45,8 @@ spatial-memory auth logout
 `--dry-run` 仅预览请求。上传将原文件交给服务端处理，素材通过上传回执引用文件；场景使用独立 schema 6 文档和数字版本锁。完整参数、场景编辑、脚本使用和退出码见 [使用文档](docs/usage.md)。
 
 会话默认保存在 `~/.config/spatial-memory/sessions.json`，权限 `0600`，按服务地址隔离；密码不保存。`SPATIAL_MEMORY_CLI_CONFIG` 或 `--config` 可选择不同的会话文件。CLI 不读取项目 `.env` 文件。
+
+Google 登录会打开本机浏览器，通过 Web 已有的 Google 登录完成授权；CLI 仅保存本站会话，不保存 Google token。浏览器与 CLI 需要在同一台电脑。使用 `--no-browser` 可手动打开终端显示的地址；默认等待 5 分钟，可用 `--login-timeout 600000` 调整。`--timeout` 仍是单次 HTTP 请求超时。取消、超时或验证失败保留原有 CLI 会话。远程服务须使用 HTTPS；localhost、127.0.0.1 和 ::1 支持本地 HTTP。服务器需部署支持 `/auth/cli` 的版本。
 
 从旧版升级时，更新脚本中的命令和环境变量名称。需要复用原有会话时，可用 `--config` 显式指定原会话文件；默认配置路径不会自动迁移。
 

@@ -3,7 +3,8 @@ export const HELP = `Spatial Memory Web CLI — 独立的 Web API 工具（Node.
 用法：spatial-memory <命令> [参数]
 默认 JSON 输出，可直接用于脚本和管道。
 
-auth login --account <邮箱或手机号> [--password-stdin]
+auth login --account <邮箱或手机号> [--password-stdin] [--provider password]
+auth login --provider google [--no-browser] [--login-timeout <ms>]
 auth status | logout
 orgs list | get <id> | create --data <json> | update <id> --data <json> | delete <id> | members <id>
 collections list --org <id> | create --org <id> --data <json>
@@ -51,6 +52,8 @@ api <GET|POST|PUT|PATCH|DELETE> </api/path> [--query key=value ...] [--data <jso
 
 --data 支持 JSON 字符串、@文件.json、-（标准输入）。
 密码通过隐藏终端输入、SPATIAL_MEMORY_PASSWORD 或 --password-stdin 提供，不写入配置。
+Google 登录在本机浏览器完成，默认等待 5 分钟；--no-browser 输出地址供手动打开，Ctrl+C 取消。
+Google 登录需 HTTPS（本地服务可用 HTTP）；浏览器与 CLI 须在同一台电脑，服务需支持 /auth/cli。
 所有 GET 资源命令支持重复 --query key=value。管理员命令沿用服务器权限。
 上传发送原文件，由服务端处理媒体并签发回执；素材引用回执，场景保存 schema 6 文档。
 退出码：0 成功，1 API/网络失败，2 参数错误，3 未登录，4 无权限，130 取消。

@@ -3,7 +3,7 @@ import { cookieHeader, mergeCookies, type Cookie } from "./cookies.js";
 import { CliError, HttpError } from "./errors.js";
 
 export interface RequestPlan { method: string; path: string; body?: unknown }
-interface ClientSettings { baseUrl: string; configPath: string; timeout: number; verbose?: boolean }
+interface ClientSettings { baseUrl: string; configPath: string; timeout: number; verbose?: boolean; persistCookies?: boolean }
 
 export class Client {
   cookies: Cookie[] = [];
@@ -20,7 +20,7 @@ export class Client {
     return url;
   }
 
-  async request(plan: RequestPlan): Promise<unknown> {
+  async request(plan: RequestPlan, signal?: AbortSignal): Promise<unknown> {
     const url = this.url(plan.path);
     const headers = new Headers({ Accept: "application/json", Origin: this.settings.baseUrl });
     const cookie = cookieHeader(this.cookies, url);
@@ -31,16 +31,18 @@ export class Client {
     let response: Response;
     let raw: string;
     try {
-      response = await fetch(url, { method: plan.method, headers, redirect: "manual", signal: AbortSignal.timeout(this.settings.timeout),
+      const timeout = AbortSignal.timeout(this.settings.timeout);
+      response = await fetch(url, { method: plan.method, headers, redirect: "manual", signal: signal ? AbortSignal.any([timeout, signal]) : timeout,
         body: plan.body === undefined ? undefined : multipart ? plan.body as FormData : JSON.stringify(plan.body) });
       raw = await response.text();
     } catch (error) {
+      if (signal?.aborted) throw signal.reason;
       const timeout = (error as Error).name === "TimeoutError" || (error as Error).name === "AbortError";
       throw new CliError(timeout ? `请求超时（${this.settings.timeout}ms）` : `无法连接 ${url.origin}，请确认 Web 服务已启动`, 1);
     }
     if (this.settings.verbose) process.stderr.write(`${plan.method} ${url.pathname} → ${response.status} (${Date.now() - started}ms)\n`);
     const updated = mergeCookies(this.cookies, response.headers);
-    if (JSON.stringify(updated) !== JSON.stringify(this.cookies)) { this.cookies = updated; await this.save(); }
+    if (JSON.stringify(updated) !== JSON.stringify(this.cookies)) { this.cookies = updated; if (this.settings.persistCookies !== false) await this.save(); }
     if (response.status >= 300 && response.status < 400) {
       const location = new URL(response.headers.get("location") ?? "/", url);
       if (location.origin === url.origin && location.pathname.startsWith("/auth/login")) throw new HttpError(401, "会话缺失或过期，请先运行 auth login");

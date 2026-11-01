@@ -5,14 +5,20 @@
 ## 登录与服务地址
 
 ```bash
-npm install --global ./spatial-memory-web-cli-0.2.1.tgz
+npm install --global ./spatial-memory-web-cli-0.3.0.tgz
 export SPATIAL_MEMORY_BASE_URL=https://www.spatialmemory.online
+spatial-memory auth login --provider google
+# 或使用邮箱/手机号和密码
 spatial-memory auth login --account you@example.com
 spatial-memory auth status
 spatial-memory orgs list
 ```
 
 手机号同样用于 `--account`。密码从隐藏终端、`SPATIAL_MEMORY_PASSWORD` 或 `--password-stdin` 读取；没有明文密码参数。会话按 origin 隔离，默认保存到 `~/.config/spatial-memory/sessions.json`（0600），不保存密码。`--config` 或 `SPATIAL_MEMORY_CLI_CONFIG` 可指定另一会话文件。CLI 不读取项目 `.env`。
+
+Google 登录会打开系统浏览器，在 Web 登录并确认授权后自动返回 CLI。浏览器与 CLI 须在同一台电脑；CLI 使用只监听 `127.0.0.1` 的临时回调端口，完成或取消时自动关闭。`--no-browser` 仅输出授权地址，供手动在同机浏览器打开。默认等待 5 分钟，`--login-timeout <毫秒>` 调整整个登录期限，`--timeout` 单独控制每次 HTTP 请求。Ctrl+C 取消登录。不要把授权链接发送给他人。
+
+CLI 通过一次性授权码和 PKCE 交换本站会话，校验当前用户后才保存；Google token、授权码和 PKCE verifier 不写入会话文件或命令输出。失败、拒绝和超时保留原有会话。Google 登录不能同时使用 `--account` 或 `--password-stdin`；原密码登录也可显式指定 `--provider password`。远端服务必须使用 HTTPS，本地 `localhost`、`127.0.0.1` 和 `::1` 服务可使用 HTTP。此功能需要配套部署 Web `/auth/cli` 授权页面与 `/api/auth/cli/exchange` 接口，未升级服务器不能完成浏览器登录。
 
 服务地址优先级是 `--base-url`、`SPATIAL_MEMORY_BASE_URL`、`http://localhost:3000`。只接受 origin，无路径、账号或密码。Secure Cookie 不会发到 HTTP，也不自动跟随重定向。`auth logout` 注销会话。
 
