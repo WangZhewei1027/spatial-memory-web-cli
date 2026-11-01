@@ -26,9 +26,10 @@ export async function uploadCommand(args: Args, client: Client) {
   if (body.name === undefined) body.name = basename(file);
   if (typeof body.name !== "string" || !body.name.trim()) throw new CliError("素材名称不能为空");
   const mime = str(args.options, "mime") ?? mimeTypes[extname(file).toLowerCase()] ?? "application/octet-stream";
+  const role = body.fileType === "anchor" ? "reference" : "primary";
   if (args.options["dry-run"]) return { baseUrl: client.settings.baseUrl, steps: [
     { method: "POST", path: "/api/upload", file, size: info.size, mime, type: body.fileType, organization_id: org, purpose: "asset" },
-    { method: "POST", path: `/api/organizations/${org}/assets`, body: { ...body, resources: [{ role: "primary", receiptId: "<upload.data.id>" }] } },
+    { method: "POST", path: `/api/organizations/${org}/assets`, body: { ...body, resources: [{ role, receiptId: "<upload.data.id>" }] } },
   ] };
   const form = new FormData();
   form.set("file", await openAsBlob(file, { type: mime }), basename(file));
@@ -38,7 +39,7 @@ export async function uploadCommand(args: Args, client: Client) {
   const upload = object(await client.request({ method: "POST", path: "/api/upload", body: form }));
   const receipt = object(upload.data);
   if (typeof receipt.id !== "string" || receipt.organization_id !== org || typeof receipt.url !== "string") throw new CliError("上传回执格式或团队归属不正确", 1);
-  const createBody = { ...body, resources: [{ role: "primary", receiptId: receipt.id }] };
+  const createBody = { ...body, resources: [{ role, receiptId: receipt.id }] };
   try {
     return await client.request({ method: "POST", path: `/api/organizations/${org}/assets`, body: createBody });
   } catch (error) {

@@ -4,6 +4,7 @@
 
 - 对齐当前团队内容 API：Scene 独立读写 schema 6 document，以 expectedLockVersion 防止覆盖冲突；支持分组、媒体、空间文字、参数动画和空间音频。
 - 素材按团队创建，上传结果通过 receiptId 引用；查询、归档、复制使用当前路由。地图合集与放置点改用 collections 和 placements 命令。
+- anchor 上传以 reference 角色引用识别图回执，预览与实际请求保持一致。
 - 移除已删除的 workspaces、assets move/copy 路由和旧场景 schema 1/2、text_content、scene_revision 命令路径。
 - 更新离线 HTTP 契约测试和独立安装包验证，保留手机号新域登录及会话隔离。
 

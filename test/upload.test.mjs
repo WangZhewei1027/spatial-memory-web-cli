@@ -52,3 +52,36 @@ test("multipart upload creates asset; rejects clean up only new, unambiguously f
     assert.equal(deletes, 1);
     assert.match(ambiguous.stderr, /storagePath/);
 });
+
+test("anchor upload supplies a reference receipt in both preview and actual creation", async t => {
+    let uploads = 0, created = 0, deletes = 0;
+    const f = await fixture(t, async (req, res) => {
+        if (req.method === "DELETE") { deletes++; res.end('{"removed":true}'); return; }
+        let raw = ""; for await (const chunk of req) raw += chunk;
+        if (req.url === "/api/upload") {
+            uploads++;
+            assert.match(raw, /name="type"\r\n\r\nanchor/);
+            assert.match(raw, /name="organization_id"\r\n\r\nteam/);
+            res.end(JSON.stringify({ storagePath: "assets/test/anchor", data: { id: "anchor-receipt", organization_id: "team", url: "https://media.test/anchor.jpg" } }));
+            return;
+        }
+        assert.equal(req.url, "/api/organizations/team/assets");
+        const body = JSON.parse(raw);
+        assert.equal(body.fileType, "anchor");
+        assert.equal(body.payload.kind, "anchor");
+        if (body.resources[0]?.role !== "reference") { res.statusCode = 400; res.end('{"error":"anchor requires reference"}'); return; }
+        assert.deepEqual(body.resources, [{ role: "reference", receiptId: "anchor-receipt" }]);
+        created++;
+        res.statusCode = 201; res.end('{"data":{"asset":{"id":"anchor"}}}');
+    });
+    const file = join(f.dir, "anchor.jpg"); await writeFile(file, "image fixture");
+    const args = ["assets", "upload", file, "--org", "team", "--type", "anchor"];
+    const dry = await f.cli([...args, "--dry-run"]);
+    assert.equal(dry.code, 0, dry.stderr);
+    assert.deepEqual(JSON.parse(dry.stdout).steps[1].body.resources, [{ role: "reference", receiptId: "<upload.data.id>" }]);
+    assert.equal(uploads, 0);
+    const result = await f.cli(args);
+    assert.equal(result.code, 0, result.stderr);
+    assert.equal(JSON.parse(result.stdout).data.asset.id, "anchor");
+    assert.equal(uploads, 1); assert.equal(created, 1); assert.equal(deletes, 0);
+});
