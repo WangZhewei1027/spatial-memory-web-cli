@@ -1,0 +1,32 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { fixture } from "./helpers.mjs";
+
+test("standalone scene protocol validates files and builds a revision-aware save", async (t) => {
+  let requests = 0;
+  const f = await fixture(t, (_req, res) => { requests++; res.end('{}'); });
+  const version = await f.cli(["--version"]);
+  assert.equal(version.code, 0, version.stderr);
+  assert.match(version.stdout, /^\d+\.\d+\.\d+\n$/);
+  const init = await f.cli(["scenes", "init"]);
+  assert.equal(init.code, 0, init.stderr);
+  const scene = JSON.parse(init.stdout);
+  assert.equal(scene.schemaVersion, 2);
+  const file = join(f.dir, "scene.json");
+  await writeFile(file, init.stdout);
+  assert.equal((await f.cli(["scenes", "validate", file])).code, 0);
+  const revision = "a".repeat(32);
+  const save = await f.cli(["scenes", "save", "scene-id", "--scene-file", file, "--revision", revision, "--dry-run"]);
+  assert.equal(save.code, 0, save.stderr);
+  const plan = JSON.parse(save.stdout);
+  assert.equal(plan.method, "PATCH");
+  assert.equal(plan.body.scene_revision, revision);
+  assert.deepEqual(JSON.parse(plan.body.text_content), scene);
+  scene.schemaVersion = 99;
+  await writeFile(file, JSON.stringify(scene));
+  const invalid = await f.cli(["scenes", "validate", file]);
+  assert.equal(invalid.code, 2); assert.match(invalid.stderr, /schemaVersion/);
+  assert.equal(requests, 0);
+});
