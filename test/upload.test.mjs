@@ -21,19 +21,19 @@ test("multipart upload creates asset; rejects clean up only new, unambiguously f
             assert.match(req.headers["content-type"], /multipart\/form-data; boundary=/);
             assert.match(body, /name="file"; filename="model.glb"/);
             assert.match(body, /Content-Type: model\/gltf-binary/);
-            assert.match(body, /name="workspace_id"\r\n\r\nworkspace/);
-            res.end(JSON.stringify({ url: "https://media.test/file", contentHash: "hash", storagePath: dedup ? null : "assets/test/file" }));
+            assert.match(body, /name="organization_id"\r\n\r\nteam/);
+            res.end(JSON.stringify({ url: "https://media.test/file", contentHash: "hash", storagePath: dedup ? null : "assets/test/file", data: { id: "receipt", organization_id: "team", url: "https://media.test/file" } }));
         }
         else {
-            assert.equal(req.url, "/api/workspaces/workspace/assets");
-            assert.deepEqual(JSON.parse(body), { file_type: "model", name: "model.glb", file_url: "https://media.test/file", content_hash: "hash" });
+            assert.equal(req.url, "/api/organizations/team/assets");
+            assert.deepEqual(JSON.parse(body), { fileType: "model", name: "model.glb", payload: { kind: "model" }, resources: [{ role: "primary", receiptId: "receipt" }], idempotencyKey: "upload-test" });
             res.statusCode = status;
             res.end(status === 201 ? '{"data":{"id":"asset"}}' : '{"error":"create rejected"}');
         }
     });
     const file = join(f.dir, "model.glb");
     await writeFile(file, "model bytes");
-    const args = ["assets", "upload", file, "--workspace", "workspace", "--type", "model"];
+    const args = ["assets", "upload", file, "--org", "team", "--type", "model", "--idempotency-key", "upload-test"];
     assert.equal((await f.cli([...args, "--dry-run"])).code, 0);
     assert.equal(uploads, 0);
     const success = await f.cli(args);

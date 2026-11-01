@@ -48,7 +48,7 @@ test("invalid flags, paths and malformed bodies never send requests; dry-run is 
     let requests = 0;
     const f = await fixture(t, (_req, res) => { requests++; res.end('{}'); });
     for (const args of [
-        ["assets", "list"], ["assets", "list", "--org", "o", "--workspace", "w"],
+        ["assets", "list"], ["assets", "list", "--org", "o", "--collection", "w"],
         ["orgs", "list", "--typo"], ["orgs", "list", "--data", "{}"], ["orgs", "list", "extra"],
         ["api", "POST", "/api/users", "--data", "[]"], ["api", "GET", "/api/users", "--data", "{}"],
         ...["https://example.test/api/users", "//example.test/api/users", "/api/../users", "/api/../../api/../x", "/api/x#fragment"].map((path) => ["api", "GET", path]),
@@ -56,9 +56,9 @@ test("invalid flags, paths and malformed bodies never send requests; dry-run is 
         const r = await f.cli(args);
         assert.equal(r.code, 2, JSON.stringify(args) + r.stderr);
     }
-    const dry = await f.cli(["assets", "create", "--workspace", "w", "--type", "text", "--text", "测试", "--dry-run"]);
+    const dry = await f.cli(["assets", "create", "--org", "o", "--type", "text", "--name", "测试", "--text", "测试", "--dry-run"]);
     assert.equal(dry.code, 0, dry.stderr);
-    assert.equal(JSON.parse(dry.stdout).body.text_content, "测试");
+    assert.equal(JSON.parse(dry.stdout).body.payload.text, "测试");
     const query = await f.cli(["logs", "list", "--query", "q=one & two=three", "--dry-run"]);
     assert.equal(new URL(JSON.parse(query.stdout).url).searchParams.get("q"), "one & two=three");
     assert.equal(requests, 0);

@@ -4,10 +4,10 @@
 
 ## 安装和连接线上服务
 
-收到 `spatial-memory-web-cli-0.2.0.tgz` 后，在任意目录安装：
+收到 `spatial-memory-web-cli-0.2.1.tgz` 后，在任意目录安装：
 
 ```bash
-npm install --global ./spatial-memory-web-cli-0.2.0.tgz
+npm install --global ./spatial-memory-web-cli-0.2.1.tgz
 spatial-memory --version
 spatial-memory --help
 
@@ -15,8 +15,8 @@ export SPATIAL_MEMORY_BASE_URL=https://your-web.example
 spatial-memory auth login --account you@example.com
 spatial-memory auth status
 spatial-memory orgs list
-spatial-memory workspaces list --org ORGANIZATION_ID
-spatial-memory assets list --workspace WORKSPACE_ID
+spatial-memory collections list --org ORGANIZATION_ID
+spatial-memory assets list --org ORGANIZATION_ID
 ```
 
 PowerShell 设置服务地址使用 `$env:SPATIAL_MEMORY_BASE_URL = "https://your-web.example"`。也可为每次调用添加 `--base-url https://your-web.example`。邮箱和手机号账号都支持，登录时隐藏密码输入，沿用线上账号的权限。
@@ -26,8 +26,8 @@ PowerShell 设置服务地址使用 `$env:SPATIAL_MEMORY_BASE_URL = "https://you
 ## 常用操作
 
 ```bash
-spatial-memory assets create --workspace WORKSPACE_ID --type text --name "调试素材" --text "你好"
-spatial-memory assets upload ./model.glb --workspace WORKSPACE_ID --type model
+spatial-memory assets create --org ORGANIZATION_ID --type text --name "调试素材" --text "你好"
+spatial-memory assets upload ./model.glb --org ORGANIZATION_ID --type model
 spatial-memory assets update ASSET_ID --data @patch.json --dry-run
 spatial-memory scenes init > scene.json
 spatial-memory scenes validate scene.json
@@ -36,9 +36,9 @@ spatial-memory api GET /api/admin/app-config
 spatial-memory auth logout
 ```
 
-覆盖组织、工作区、素材、文件上传、场景、用户、标签、匹配特征和日志。通用 `api` 命令调用其余 JSON API。成功输出为 JSON，可直接重定向或管道传给 jq；错误及 `--verbose` 诊断写入 stderr。
+覆盖团队、地图合集、素材、放置点、文件上传、场景、用户、标签、匹配特征和日志。通用 `api` 命令调用其余 JSON API。成功输出为 JSON，可直接重定向或管道传给 jq；错误及 `--verbose` 诊断写入 stderr。
 
-`--dry-run` 仅预览请求。上传保留原文件，当前服务端限制 5 MiB；场景保存支持版本冲突检测。完整参数、场景编辑、脚本使用和退出码见 [使用文档](docs/usage.md)。
+`--dry-run` 仅预览请求。上传将原文件交给服务端处理，素材通过上传回执引用文件；场景使用独立 schema 6 文档和数字版本锁。完整参数、场景编辑、脚本使用和退出码见 [使用文档](docs/usage.md)。
 
 会话默认保存在 `~/.config/spatial-memory/sessions.json`，权限 `0600`，按服务地址隔离；密码不保存。`SPATIAL_MEMORY_CLI_CONFIG` 或 `--config` 可选择不同的会话文件。CLI 不读取项目 `.env` 文件。
 
@@ -57,4 +57,4 @@ npm pack
 
 `npm pack` 自动编译 TypeScript，输出可分享的 `.tgz`。接收者无需 TypeScript 或开发依赖。`npm run test:package` 在临时目录离线安装包，通过 npm 生成的 `spatial-memory` 命令和完整 HTTP 模拟测试验证安装产物，不访问线上数据。
 
-源码位于 `src/`；场景协议快照的兼容性和维护说明见 [协议文档](docs/protocol.md)。当前包的许可证标识为 `UNLICENSED`，未声明开源许可证。
+源码位于 `src/`；场景协议快照的维护说明见 [协议文档](docs/protocol.md)。当前包的许可证标识为 `UNLICENSED`，未声明开源许可证。

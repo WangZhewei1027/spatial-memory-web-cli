@@ -10,18 +10,26 @@ const routes: Record<string, [string, string, "required"?]> = {
   "orgs update": ["PUT", "/api/organizations/:id", "required"],
   "orgs delete": ["DELETE", "/api/organizations/:id"],
   "orgs members": ["GET", "/api/organizations/:id/members"],
-  "workspaces list": ["GET", "/api/workspaces"],
-  "workspaces get": ["GET", "/api/workspaces/:id"],
-  "workspaces create": ["POST", "/api/workspaces", "required"],
-  "workspaces update": ["PUT", "/api/workspaces/:id", "required"],
-  "workspaces delete": ["DELETE", "/api/workspaces/:id"],
+  "collections list": ["GET", "/api/organizations/:org/collections"],
+  "collections create": ["POST", "/api/organizations/:org/collections", "required"],
+  "collections get": ["GET", "/api/collections/:id"],
+  "collections update": ["PATCH", "/api/collections/:id", "required"],
+  "collections archive": ["POST", "/api/collections/:id/archive"],
+  "collections restore": ["DELETE", "/api/collections/:id/archive"],
   "assets update": ["PATCH", "/api/assets/:id", "required"],
-  "assets delete": ["DELETE", "/api/assets/:id"],
-  "assets move": ["POST", "/api/assets/move", "required"],
-  "assets copy": ["POST", "/api/assets/copy", "required"],
+  "assets duplicate": ["POST", "/api/assets/:id/duplicate", "required"],
+  "assets usage": ["GET", "/api/assets/:id/usage"],
+  "placements list": ["GET", "/api/collections/:collection/placements"],
+  "placements create": ["POST", "/api/collections/:collection/placements", "required"],
+  "placements get": ["GET", "/api/placements/:id"],
+  "placements update": ["PATCH", "/api/placements/:id", "required"],
+  "placements move": ["POST", "/api/placements/move", "required"],
+  "placements copy": ["POST", "/api/placements/:id/copy", "required"],
   "assets matching": ["GET", "/api/assets/:id/matching"],
   "assets rebuild": ["POST", "/api/assets/:id/matching"],
-  "scenes get": ["GET", "/api/assets/:id"],
+  "scenes get": ["GET", "/api/scenes/:id"],
+  "scenes list": ["GET", "/api/organizations/:org/scenes"],
+  "scenes copy": ["POST", "/api/scenes/:id/copy", "required"],
   "users me": ["GET", "/api/users/me"],
   "users list": ["GET", "/api/users"],
   "users update": ["PUT", "/api/users/:id", "required"],
@@ -43,13 +51,15 @@ export async function resourcePlan(args: Args): Promise<RequestPlan | undefined>
   const hasId = template.includes(":id");
   const allowed = data ? ["data"] : [];
   if (method === "GET") allowed.push("query");
-  if (key === "workspaces list" || key === "tags list") allowed.push("org");
-  if (key === "tags list") allowed.push("workspace");
+  if (template.includes(":org") || key === "tags list") allowed.push("org");
+  if (template.includes(":collection") || key === "tags list") allowed.push("collection");
   check(args, hasId ? 3 : 2, allowed);
-  const path = hasId ? template.replace(":id", id(args.words[2])) : template;
-  const org = str(args.options, "org"), workspace = str(args.options, "workspace");
-  if (key === "tags list" && (!org === !workspace)) throw new CliError("tags list 需要且只能指定 --org 或 --workspace");
-  return { method, path: withQuery(path, args.options, { organization_id: org, workspace_id: workspace }),
+  let path = hasId ? template.replace(":id", id(args.words[2])) : template;
+  const org = str(args.options, "org", template.includes(":org")), collection = str(args.options, "collection", template.includes(":collection"));
+  if (org && template.includes(":org")) path = path.replace(":org", id(org));
+  if (collection && template.includes(":collection")) path = path.replace(":collection", id(collection));
+  if (key === "tags list" && (!org === !collection)) throw new CliError("tags list 需要且只能指定 --org 或 --collection");
+  return { method, path: withQuery(path, args.options, key === "tags list" ? { organization_id: org, workspace_id: collection } : {}),
     body: data ? await jsonData(str(args.options, "data", true)!) : undefined };
 }
 

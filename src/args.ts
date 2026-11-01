@@ -2,8 +2,8 @@ import { parseArgs } from "node:util";
 import { readFile } from "node:fs/promises";
 import { CliError, object } from "./errors.js";
 
-const strings = ["base-url", "config", "timeout", "account", "data", "org", "workspace", "type", "name", "text", "scene-file", "revision", "mime"];
-const flags = ["help", "version", "compact", "verbose", "dry-run", "password-stdin", "require-location"];
+const strings = ["base-url", "config", "timeout", "account", "data", "org", "collection", "type", "name", "text", "scene-file", "lock-version", "idempotency-key", "mime"];
+const flags = ["help", "version", "compact", "verbose", "dry-run", "password-stdin"];
 export type Options = Record<string, string | boolean | string[] | undefined>;
 export interface Args { words: string[]; options: Options }
 
@@ -63,4 +63,10 @@ export function withQuery(path: string, options: Options, mapped: Record<string,
 export function id(value: string): string {
   if (!/^[a-z0-9_-]+$/i.test(value)) throw new CliError("ID 只能包含字母、数字、下划线和连字符");
   return encodeURIComponent(value);
+}
+
+export function lockVersion(args: Args): number {
+  const value = str(args.options, "lock-version", true)!;
+  if (!/^\d+$/.test(value) || !Number.isSafeInteger(Number(value))) throw new CliError("--lock-version 必须是读取响应中的非负整数 lock_version");
+  return Number(value);
 }
