@@ -1,6 +1,6 @@
 # 命令使用说明
 
-需要 Node.js 22+ 和可访问的 Web 服务。账号、团队权限和冲突校验由服务端执行；CLI 没有运行时依赖。
+需要 Node.js 22+ 和可访问的 Web 服务。账号、团队权限和冲突校验由服务端执行；共享编排与渲染依赖随安装包交付，图片渲染另需本机 Chrome/Chromium。
 
 ## 登录与服务地址
 
@@ -72,7 +72,7 @@ spatial-memory scenes archive SCENE_ID --lock-version 1
 spatial-memory scenes restore SCENE_ID --lock-version 2
 ```
 
-`init` 和 `validate` 离线处理 schema 6 编辑文档。支持欧拉角、嵌套分组、媒体、空间文字、透明度/音量关键帧与空间音频。读取 `data.lock_version` 后将同一值传给 `--lock-version`；其他编辑者先保存会返回 409，必须重读并合并，CLI 不覆盖。服务端另外校验素材存在、团队归属与当前资源。场景不通过 `assets create` 创建。
+`init` 和 `validate` 离线处理 schema 6 编辑文档。支持欧拉角、嵌套分组、媒体、空间文字、透明度/音量关键帧、空间音频与 `viewerPosition` 观看位置。读取 `data.lock_version` 后将同一值传给 `--lock-version`；其他编辑者先保存会返回 409，必须重读并合并，CLI 不覆盖。服务端另外校验素材存在、团队归属与当前资源。场景不通过 `assets create` 创建。
 
 ## 放置点与管理接口
 
@@ -93,7 +93,7 @@ spatial-memory api GET /api/admin/app-config
 
 ## 输出与验证
 
-成功为 stdout JSON，错误和 `--verbose` 为 stderr；`--compact` 输出单行。`--dry-run` 只显示请求计划，不读取会话、不发网络（auth 不支持）。`--data` 字段严格沿用当前 API，CLI 不改写旧请求。退出码：0 成功、1 API/网络失败、2 输入错误、3 未登录、4 无权限、130 取消。
+成功为 stdout JSON，错误和 `--verbose` 为 stderr；`--compact` 输出单行。`--dry-run` 不发送远端请求（auth 不支持）。HTTP 命令输出请求计划；本地 `scenes apply` 仍执行同一套编排与校验，但不写回草稿，`render` 只输出采样与渲染计划。`--data` 字段严格沿用当前 API，CLI 不改写旧请求。退出码：0 成功、1 API/网络失败、2 输入错误、3 未登录、4 无权限、130 取消。
 
 ```bash
 npm ci

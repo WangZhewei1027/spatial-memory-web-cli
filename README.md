@@ -42,7 +42,7 @@ spatial-memory auth logout
 
 本地 agent 可搜索素材库、导入网络或本地文件、操作带 revision 的草稿、采样和渲染多视角图片，再保存远端场景。执行素材搜集、编排、视觉反馈或失败恢复任务时，阅读 [agent 工作流程](docs/agent.md)。
 
-`--dry-run` 仅预览请求。上传将原文件交给服务端处理，素材通过上传回执引用文件；场景使用独立 schema 6 文档和数字版本锁。完整参数、场景编辑、脚本使用和退出码见 [使用文档](docs/usage.md)。
+`--dry-run` 预览远端请求或本地操作结果，不提交修改。上传将原文件交给服务端处理，素材通过上传回执引用文件；场景使用独立 schema 6 文档和数字版本锁。完整参数、场景编辑、脚本使用和退出码见 [使用文档](docs/usage.md)。
 
 会话默认保存在 `~/.config/spatial-memory/sessions.json`，权限 `0600`，按服务地址隔离；密码不保存。`SPATIAL_MEMORY_CLI_CONFIG` 或 `--config` 可选择不同的会话文件。CLI 不读取项目 `.env` 文件。
 
@@ -63,4 +63,4 @@ npm pack
 
 `npm pack` 自动编译 TypeScript，输出可分享的 `.tgz`。接收者无需 TypeScript 或开发依赖。`npm run test:package` 在临时目录离线安装包，通过 npm 生成的 `spatial-memory` 命令和完整 HTTP 模拟测试验证安装产物，不访问线上数据。
 
-源码位于 `src/`；场景协议快照的维护说明见 [协议文档](docs/protocol.md)。当前包的许可证标识为 `UNLICENSED`，未声明开源许可证。
+源码位于 `src/`；共享场景协议与依赖包的维护说明见 [协议文档](docs/protocol.md)。当前包的许可证标识为 `UNLICENSED`，未声明开源许可证。
