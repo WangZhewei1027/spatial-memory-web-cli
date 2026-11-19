@@ -38,7 +38,7 @@ spatial-memory api GET /api/admin/app-config
 spatial-memory auth logout
 ```
 
-覆盖团队、地图合集、素材、放置点、文件上传、场景、用户、标签、匹配特征和日志。通用 `api` 命令调用其余 JSON API。成功输出为 JSON，可直接重定向或管道传给 jq；错误及 `--verbose` 诊断写入 stderr。
+覆盖 Web 服务全部业务 API：团队、成员与邀请、地图合集、素材、放置点、活动、文件上传、内容复制、场景、用户、标签、匹配特征、日志、管理员配置和小程序公开接口。通用 `api` 命令可直接调用任意 `/api/` JSON 端点。成功输出为 JSON，可直接重定向或管道传给 jq；错误及 `--verbose` 诊断写入 stderr。
 
 本地 agent 可搜索素材库、导入网络或本地文件、操作带 revision 的草稿、采样和渲染多视角图片，再保存远端场景。执行素材搜集、编排、视觉反馈或失败恢复任务时，阅读 [agent 工作流程](docs/agent.md)。
 

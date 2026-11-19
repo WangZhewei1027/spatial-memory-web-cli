@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- 补齐 Web 服务全部业务 API 命令：`members`、`invitations`、`activities`、`activity-placements`、`activity-records`、`admin`、`miniapp`、`uploads` 与 `content duplicate`，以及 `orgs placements/map-scan-model/pin/unpin`、`placements content`、`assets by-hash`、`users update-me/role/search/by-ids`、`logs report`。
+- 资源命令目录支持可选路径、位置参数映射为查询参数和多 ID 列表；新命令在发送请求前校验参数，已有命令路由不变。
 - 新增 `auth login --provider google`：本机浏览器登录、一次性 PKCE 授权码交换、验证后保存本站会话；支持手动打开、整体登录超时与 Ctrl+C 取消。
 - 浏览器授权失败或被取消时保留原有会话；密码登录方式保持可用。需要配套部署 Web CLI 授权页面和交换接口。
 

@@ -2,7 +2,7 @@ import { parseArgs } from "node:util";
 import { readFile } from "node:fs/promises";
 import { CliError, object } from "./errors.js";
 
-const strings = ["base-url", "config", "timeout", "account", "provider", "login-timeout", "data", "org", "collection", "type", "name", "text", "scene-file", "lock-version", "idempotency-key", "mime", "run", "runs-dir", "revision", "scene", "ops", "out", "time", "times", "cameras", "camera-file", "width", "height", "facts", "output-dir", "resources", "limit", "search", "cache-dir", "source-page", "resume"];
+const strings = ["base-url", "config", "timeout", "account", "provider", "login-timeout", "data", "org", "collection", "activity", "type", "name", "text", "scene-file", "lock-version", "idempotency-key", "mime", "run", "runs-dir", "revision", "scene", "ops", "out", "time", "times", "cameras", "camera-file", "width", "height", "facts", "output-dir", "resources", "limit", "search", "cache-dir", "source-page", "resume"];
 const flags = ["help", "version", "compact", "verbose", "dry-run", "password-stdin", "no-browser", "remote", "overlays"];
 export type Options = Record<string, string | boolean | string[] | undefined>;
 export interface Args { words: string[]; options: Options }

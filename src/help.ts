@@ -7,6 +7,10 @@ auth login --account <邮箱或手机号> [--password-stdin] [--provider passwor
 auth login --provider google [--no-browser] [--login-timeout <ms>]
 auth status | logout
 orgs list | get <id> | create --data <json> | update <id> --data <json> | delete <id> | members <id>
+orgs placements <id> [--query status=<status>] | map-scan-model <id> | pin <id> | unpin <id>
+members list --org <id> | add --org <id> --data <json> | update --org <id> --data <json> | remove <member-id> --org <id>
+invitations list --org <id> | create --org <id> [--data <json>] | revoke <invitation-id> --org <id>
+invitations get <token> | accept <token>
 collections list --org <id> | create --org <id> --data <json>
 collections get <id> | update <id> --data <json> | archive <id> | restore <id>
 assets list [--collection <id> | --org <id>] [--type <type>] | get <id>
@@ -16,16 +20,22 @@ assets import <file|url> --org <id> --type <type> [--source-page <url>] [--idemp
 assets create --org <id> --type <type> --name <名称> [--text <内容>] [--data <json>] [--idempotency-key <key>]
 assets upload <file> --org <id> --type <type> [--name <名称>] [--data <json>] [--mime <mime>] [--idempotency-key <key>]
 assets update <id> --data <json> | delete <id> --lock-version <lock_version>
-assets duplicate <id> --data <json> | usage <id>
+assets duplicate <id> --data <json> | usage <id> | by-hash <sha256> [--org <id> | --collection <id>]
+uploads create <file> [--org <id> | --collection <id>] [--type <type>] [--mime <mime>] | delete <storage-path>
+content duplicate --data <json>
 placements list --collection <id> | create --collection <id> --data <json>
-placements get <id> | update <id> --data <json> | delete <id> --lock-version <lock_version>
+placements get <id> | content <id> [--collection <viewer-id>] | update <id> --data <json> | delete <id> --lock-version <lock_version>
 placements move --data <json> | copy <id> --data <json>
 assets matching <id> | rebuild <id>
+activities list --org <id> | create --org <id> --data <json> | get <id> | update <id> --data <json>
+activity-placements list [--activity <id> | --collection <id>] | create --activity <id> --data <json>
+activity-placements get <id> | update <id> --data <json>
+activity-records list --activity <id> [--query placementId=<id>] | update <id> --data <json>
 scenes init | validate <file> | list --org <id> | get <id> | copy <id> --data <json>
 scenes create --org <id> --name <名称> [--scene-file <file>] [--idempotency-key <key>]
 scenes archive <id> --lock-version <lock_version> | restore <id> --lock-version <lock_version>
 scenes save <id> --scene-file <file> --lock-version <lock_version> [--name <名称>]
-scenes inspect | validate --run <id> [--runs-dir <dir>] [--remote --org <id>]
+scenes inspect | validate [<file> | --run <id>] [--runs-dir <dir>] [--remote --org <id>]
 scenes apply --run <id> --revision <n> --ops <json|@file|-> [--facts @file] [--runs-dir <dir>]
 scenes apply --scene-file <file> --ops <json|@file|-> --out <file>
 scenes sample [--run <id> | --scene-file <file>] --time <seconds> [--facts @file]
@@ -35,9 +45,15 @@ scenes save [scene-id] --run <id> --revision <n> [--lock-version <n>] [--org <id
 runs open [--scene <id> | --scene-file <file>] [--run <id>] [--runs-dir <dir>]
 runs status <id> | history <id> [--runs-dir <dir>]
 runs restore <id> <target-revision> --revision <current-revision> [--runs-dir <dir>]
-users me | list | create --data <json> | update <id> --data <json> | deletion-preview <id> | delete <id>
+users me | update-me --name <名称> | role | by-ids <id> [<id> ...] | search --org <id> --search <邮箱/手机号/名称>
+users list | create --data <json> | update <id> --data <json> | deletion-preview <id> | delete <id>
 tags list [--collection <id> | --org <id>] | create --data <json> | update <id> --data <json> | delete <id>
-logs list [--query key=value ...]
+logs list [--query key=value ...] | report --data <json>
+admin orgs | app-config | update-app-config --data <json> | map-scan-model | update-map-scan-model --data <json>
+admin clean --data <json>
+miniapp orgs <id> [<id> ...] | collections [<id> ...] [--org <id>] | scenes <id> [<id> ...] --org <id>
+miniapp activities [--org <id>] [--collection <id>] | activity-progress | activity-records --query key=value ...
+miniapp submit-record | nearby | huge | scene-manifest | scene-preview | anchor-candidates | anchor-content --data <json>
 api <GET|POST|PUT|PATCH|DELETE> </api/path> [--query key=value ...] [--data <json>]
 
 全局选项：
@@ -54,7 +70,7 @@ api <GET|POST|PUT|PATCH|DELETE> </api/path> [--query key=value ...] [--data <jso
 密码通过隐藏终端输入、SPATIAL_MEMORY_PASSWORD 或 --password-stdin 提供，不写入配置。
 Google 登录在本机浏览器完成，默认等待 5 分钟；--no-browser 输出地址供手动打开，Ctrl+C 取消。
 Google 登录需 HTTPS（本地服务可用 HTTP）；浏览器与 CLI 须在同一台电脑，服务需支持 /auth/cli。
-所有 GET 资源命令支持重复 --query key=value。管理员命令沿用服务器权限。
+所有 GET 资源命令支持重复 --query key=value。管理员命令沿用服务器权限；miniapp 为公开接口，无需登录。
 上传发送原文件，由服务端处理媒体并签发回执；素材引用回执，场景保存 schema 6 文档。
 退出码：0 成功，1 API/网络失败，2 参数错误，3 未登录，4 无权限，130 取消。
 素材 import 原文件上限沿用服务端，model 为 5 MiB。场景操作字段详见 docs/agent.md。

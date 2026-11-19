@@ -89,7 +89,76 @@ spatial-memory logs list --query statusClass=5xx --query limit=20
 spatial-memory api GET /api/admin/app-config
 ```
 
-放置点创建、移动和修改 JSON 使用服务端公开契约，含当前位置、目标资源和版本锁；`targetWorkspaceId` 是 API 对合集 ID 的字段名。旧 `workspaces`、`assets move/copy` 命令已移除。`orgs`、`users`、`tags` 和日志保持服务端权限；所有可用命令见 `--help`。未封装 API 用 `api METHOD /api/path`，仅允许同一服务 `/api/` 下的 JSON 请求。
+放置点创建、移动和修改 JSON 使用服务端公开契约，含当前位置、目标资源和版本锁；`targetWorkspaceId` 是 API 对合集 ID 的字段名。`placements content` 读取放置点当前可播放内容，`--collection` 对应查看者合集 `workspace_id`。旧 `workspaces`、`assets move/copy` 命令已移除。`orgs`、`users`、`tags` 和日志保持服务端权限；所有可用命令见 `--help`。未封装 API 用 `api METHOD /api/path`，仅允许同一服务 `/api/` 下的 JSON 请求。
+
+## 团队成员与邀请
+
+```bash
+spatial-memory members list --org TEAM_ID
+spatial-memory users search --org TEAM_ID --search you@example.com
+spatial-memory members add --org TEAM_ID --data '{"user_id":"USER_ID","role":"member"}'
+spatial-memory members update --org TEAM_ID --data '{"member_id":"MEMBER_ID","role":"admin"}'
+spatial-memory members remove MEMBER_ID --org TEAM_ID
+spatial-memory invitations create --org TEAM_ID --data '{"role":"member","workspace_id":"COLLECTION_ID"}'
+spatial-memory invitations list --org TEAM_ID
+spatial-memory invitations revoke INVITATION_ID --org TEAM_ID
+spatial-memory invitations get TOKEN
+spatial-memory invitations accept TOKEN
+spatial-memory orgs pin TEAM_ID
+spatial-memory orgs unpin TEAM_ID
+```
+
+`members remove` 使用成员记录 ID（`member_id`），不是用户 ID。邀请链接不能授予 owner；`workspace_id` 只作为加入后的跳转目标。`users search` 按完整邮箱、11 位手机号，或至少 3 个字符的名称/邮箱前缀查询，需要团队添加成员权限。`users by-ids USER_ID ...` 批量读取用户名称，`users update-me --name` 修改自己的显示名称，`users role` 返回全局角色。
+
+## 活动
+
+```bash
+spatial-memory activities list --org TEAM_ID
+spatial-memory activities create --org TEAM_ID --data @activity.json
+spatial-memory activities get ACTIVITY_ID
+spatial-memory activities update ACTIVITY_ID --data @activity-patch.json
+spatial-memory activity-placements list --activity ACTIVITY_ID
+spatial-memory activity-placements list --collection COLLECTION_ID
+spatial-memory activity-placements create --activity ACTIVITY_ID --data '{"workspaceId":"COLLECTION_ID","idempotencyKey":"link-1"}'
+spatial-memory activity-placements update ACTIVITY_PLACEMENT_ID --data '{"status":"active","expectedLockVersion":0}'
+spatial-memory activity-records list --activity ACTIVITY_ID --query placementId=ACTIVITY_PLACEMENT_ID --query limit=50
+spatial-memory activity-records update RECORD_ID --data '{"status":"hidden","expectedLockVersion":0}'
+```
+
+活动属于团队；每个活动最多关联一个未归档地图，新关联默认暂停。活动、关联和记录的写入使用 `expectedLockVersion`，创建接受 `idempotencyKey`。字段沿用服务端活动契约。
+
+## 文件、复制与去重
+
+```bash
+spatial-memory uploads create ./photo.jpg --org TEAM_ID --type image
+spatial-memory uploads delete assets/USER_ID/FILE
+spatial-memory assets by-hash SHA256 --org TEAM_ID
+spatial-memory content duplicate --data '{"sourceType":"scene","sourceId":"SCENE_ID","targetOrganizationId":"TEAM_ID","idempotencyKey":"copy-1"}'
+```
+
+`uploads create` 只调用 `POST /api/upload` 并返回回执，不创建素材；回执 `data.id` 可写入 `assets create --data` 的 `resources[].receiptId`，用于多资源素材。`--type` 可省略，由服务端按文件推断；指定时沿用 `assets upload` 的原文件上限。`uploads delete` 结束自己尚未使用的上传租约并交给服务端保留流程，存储路径取自回执 `storagePath`。`assets by-hash` 查询团队已有文件，命中时登记上传租约。`content duplicate` 跨团队复制素材、场景、活动、合集或放置点，仅限 super_admin。
+
+## 管理员与公开接口
+
+```bash
+spatial-memory admin orgs
+spatial-memory admin app-config
+spatial-memory admin update-app-config --data '{"key":"default_allowed_file_types","value":["image","model"]}'
+spatial-memory admin map-scan-model
+spatial-memory admin update-map-scan-model --data @setting.json
+spatial-memory admin clean --data '{"action":"clean-rows","workspaceId":"COLLECTION_ID"}'
+spatial-memory orgs map-scan-model TEAM_ID
+spatial-memory logs report --data '{"message":"CLI 测试"}'
+
+spatial-memory miniapp collections --org TEAM_ID
+spatial-memory miniapp orgs TEAM_ID
+spatial-memory miniapp scenes SCENE_ID --org TEAM_ID
+spatial-memory miniapp activities --collection COLLECTION_ID
+spatial-memory miniapp nearby --data '{"user_lat":31.2,"user_lng":121.5,"max_distance_meters":500,"p_workspace_id":"COLLECTION_ID"}'
+spatial-memory miniapp scene-preview --data '{"scene_id":"SCENE_ID","organization_id":"TEAM_ID"}'
+```
+
+`admin` 命令仅 super_admin 可用。`admin clean` 的 `action` 为 `clean-rows`（需要 `workspaceId`）、`clean-files` 或 `both`；服务端开启对象删除时 `clean-files` 会实际回收文件，请先在测试环境确认。`miniapp` 命令调用小程序公开接口，无需登录：`activity-progress`、`activity-records` 使用 `--query`，`submit-record`、`nearby`、`huge`、`scene-manifest`、`scene-preview`、`anchor-candidates`、`anchor-content` 使用 `--data`，字段与 Web 仓库 `docs/miniapp-api.md` 一致。已停用的 `/api/miniapp/anchors/recognize` 不提供命令。Better Auth 的其他 `/api/auth/*` 端点通过 `auth` 命令或 `api` 调用。
 
 ## 输出与验证
 

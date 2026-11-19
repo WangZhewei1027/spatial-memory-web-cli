@@ -6,7 +6,7 @@ import { authCommand } from "./auth.js";
 import { resourcePlan, rawPlan } from "./resources.js";
 import { assetCreatePlan, assetListPlan, archivePlan } from "./assets.js";
 import { sceneWritePlan } from "./scenes.js";
-import { uploadCommand } from "./upload.js";
+import { uploadCommand, uploadDeletePlan, uploadFileCommand } from "./upload.js";
 import { HELP } from "./help.js";
 import { VERSION } from "./version.js";
 import { authoring } from "./authoring.js";
@@ -21,6 +21,7 @@ async function plan(args: Args): Promise<RequestPlan> {
   if (key === "assets create") return assetCreatePlan(args);
   if (["scenes create", "scenes save", "scenes archive", "scenes restore"].includes(key)) return sceneWritePlan(args);
   if (["assets delete", "placements delete"].includes(key)) return archivePlan(args);
+  if (key === "uploads delete") return uploadDeletePlan(args);
   const resource = await resourcePlan(args);
   if (!resource) throw new CliError("未知命令，运行 spatial-memory --help 查看用法");
   return resource;
@@ -41,9 +42,9 @@ export async function run(argv: string[]): Promise<void> {
     print(await (key === "assets search" ? searchAssets(args, client) : key === "assets inspect" ? inspectAsset(args, client) : importAsset(args, client))); return;
   }
   if (args.words[0] === "auth") { await client.load(); print(await authCommand(args, client)); return; }
-  if (key === "assets upload") {
+  if (key === "assets upload" || key === "uploads create") {
     if (!args.options["dry-run"]) await client.load();
-    print(await uploadCommand(args, client)); return;
+    print(await (key === "assets upload" ? uploadCommand(args, client) : uploadFileCommand(args, client))); return;
   }
   const request = await plan(args);
   const url = client.url(request.path);
